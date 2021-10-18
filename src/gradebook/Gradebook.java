@@ -7,55 +7,70 @@ import brain.*;
 
 public class Gradebook {
 	public static void main(String args[]) {
-		int numGrades = 0;
-		Scanner sc = new Scanner(System.in);
+		try {
+			int numGrades = 0;
+			Scanner sc = new Scanner(System.in);
 		
-		System.out.println("Welcome to your Gradebook!");
-		System.out.println("Please enter how many grades you would like to insert.");
-		System.out.println("Number must be a positive integer from 1 to 20");
-		System.out.print("Number of grades : ");
+			System.out.println("Welcome to your Gradebook!");
+			System.out.println("Please enter how many grades you would like to insert.");
+			System.out.println("Number must be a positive integer from 1 to 20");
+			System.out.print("Number of grades : ");
 		
-		numGrades = getInt(1,20);
+			numGrades = getInt(1,20);
 		
-		AssignmentInterface[] openGradebook = new AssignmentInterface[numGrades];
-		String action;
-		int count = 0;
+			AssignmentInterface[] openGradebook = new AssignmentInterface[numGrades];
+			String action;
+			int count = 0;
 		
-		displayMenu();
-		while(true) {
-			System.out.print("Enter a Command : ");
-			action = sc.nextLine();
+			displayMenu();
+			while(true) {
+				try {
+				System.out.print("Enter a Command : ");
+				action = sc.nextLine();
 			
-			if (action.equalsIgnoreCase("menu")) {
-				displayMenu();
-			} else if (action.equalsIgnoreCase("add")) {
-				openGradebook =  add(openGradebook, count);
-				count = updateCount(openGradebook);
-				System.out.println("Gradebook Size is Now: " + count + "\n");
-			} else if (action.equalsIgnoreCase("del")) {
-				openGradebook = del(openGradebook, count, numGrades);
-				count = updateCount(openGradebook);
-				System.out.println("Gradebook Size is Now: " + count + "\n");
-			} else if (action.equalsIgnoreCase("print")) {
-				print(openGradebook, count);
-			} else if (action.equalsIgnoreCase("average")) {
-				average(openGradebook, count);
-			} else if (action.equalsIgnoreCase("h/l")) {
-				highlow(openGradebook, count);
-			} else if (action.equalsIgnoreCase("quiz")) {
-				avgQuestions(openGradebook, count);
-			} else if (action.equalsIgnoreCase("discuss")) {
-				printDiscuss(openGradebook, count);
-			} else if (action.equalsIgnoreCase("program")) {
-				printConcept(openGradebook, count);
-			} else if (action.equalsIgnoreCase("exit")) {
-				exit();
-			} else {
-				System.out.println("Invalid Command!");
+				if (action.equalsIgnoreCase("menu")) {
+					displayMenu();
+				
+				} else if (action.equalsIgnoreCase("add")) {
+					openGradebook =  add(openGradebook, count, numGrades);
+					count = updateCount(openGradebook);
+					System.out.println("Gradebook Size is Now: " + count + "\n");
+
+				} else if (action.equalsIgnoreCase("del")) {
+					openGradebook = del(openGradebook, count, numGrades);
+					count = updateCount(openGradebook);
+					System.out.println("Gradebook Size is Now: " + count + "\n");
+				
+				} else if (action.equalsIgnoreCase("print")) {
+					print(openGradebook, count);
+				
+				} else if (action.equalsIgnoreCase("average")) {
+					average(openGradebook, count);
+				
+				} else if (action.equalsIgnoreCase("h/l")) {
+					highlow(openGradebook, count);
+				
+				} else if (action.equalsIgnoreCase("quiz")) {
+					avgQuestions(openGradebook, count);
+				
+				} else if (action.equalsIgnoreCase("discuss")) {
+					printDiscuss(openGradebook, count);
+				
+				} else if (action.equalsIgnoreCase("program")) {
+					printConcept(openGradebook, count);
+				
+				} else if (action.equalsIgnoreCase("exit") || action.equalsIgnoreCase("quit")) {
+					sc.close();
+					exit();
+					
+				} else {
+					System.out.println("\tInvalid Command! Type In 'menu' If You Would Like To See The Menu\n");
+				}
+				} catch (Exception e) {
+					System.out.println("An Error Has Occured : " + e);
+				}
 			}
-		}
-		
-		
+		} finally {}
 	}
 	
 	public static void displayMenu() {
@@ -82,7 +97,7 @@ public class Gradebook {
 		return count;
 	}
 	
-	public static AssignmentInterface[] add(AssignmentInterface[] gb, int count) {
+	public static AssignmentInterface[] add(AssignmentInterface[] gb, int count, int numGrades) throws GradebookFullException {
 		Scanner sc = new Scanner(System.in);
 		String action;
 		
@@ -93,6 +108,11 @@ public class Gradebook {
 		int numQ;
 		String concept;
 		String reading;
+		
+		if(count == numGrades) {
+			sc.close();
+			throw new GradebookFullException("\n\t"+"The Gradebook Is Full\n");
+		}
 		
 		System.out.println("What type of grade would you like to add?");
 		System.out.println("Choices: quiz, discussion, program");
@@ -194,6 +214,7 @@ public class Gradebook {
 		System.out.print("Successfully Added : ");
 		String test = gb[count].toString();
 		System.out.println(test);
+		sc.close();
 		return gb;
 	}
 	
@@ -207,20 +228,24 @@ public class Gradebook {
 		
 	}
 	
-	public static AssignmentInterface[] del(AssignmentInterface[] gb, int count, int maxSize) {
+	public static AssignmentInterface[] del(AssignmentInterface[] gb, int count, int maxSize) throws GradebookEmptyException, InvalidGradeException {
 		String nameDel;
 		boolean wasNameFound = false;
 		boolean nameFound = false;
 		int j = 0;
 		Scanner sc = new Scanner(System.in);
+		if(count == 0) {
+			sc.close();
+			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+		}
 		AssignmentInterface[] tmp = new AssignmentInterface[maxSize];
 		
 		System.out.println("Which grade would you like deleted?");
 		nameDel = sc.nextLine();
 		wasNameFound = findName(gb, nameDel, count);
 		if(!wasNameFound) {
-			System.out.println("Sorry, that grade was not found in the book!");
-			return gb;
+			sc.close();
+			throw new InvalidGradeException("\n\t"+"The Grade Entered Could Not Be Found");
 		}
 		for(int i = 0; i < count - 1; i++) {
 			if (nameFound == true) {
@@ -235,57 +260,67 @@ public class Gradebook {
 				}
 			}
 		}
+		sc.close();
 		return tmp;
 		
 	}
 	
-	public static void print(AssignmentInterface[] gb, int max) {
-		for (int i = 0; i < max; i++) {
-			if(gb[i] != null) {
-				System.out.println(gb[i].toString());
-			}
+	public static void print(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
+		if(count == 0) {
+			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+		}
+		for (int i = 0; i < count; i++) {
+			System.out.println(gb[i].toString());
 		}
 	}
 
-	public static void average(AssignmentInterface[] gb, int max) {
-		int count = 0;
-		int average = 0;
+	public static void average(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
+		int totalGrade = 0;
+		double average = 0;
 		
-		for(int i = 0; i < max; i++) {
-			if(gb[i] != null) {
-				average = average + gb[i].getScore();
-				count++;
-			}
+		if(count == 0) {
+			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
 		}
-		average = average/count;
+		
+		for(int i = 0; i < count; i++) {
+			average = average + gb[i].getScore();
+			totalGrade++;
+		}
+		average = average/totalGrade;
 		System.out.println("Average: " + average);
 	}
 	
-	public static void highlow(AssignmentInterface[] gb, int max) {
+	public static void highlow(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
 		int high = 0;
 		int low = 100;
+		if (count == 0) {
+			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+		}
 		AssignmentInterface[] tmpHigh = new AssignmentInterface[1];
 		AssignmentInterface[] tmpLow = new AssignmentInterface[1];
 		
-		for (int i = 0; i < max; i++) {
-			if(gb[i] != null) {
-				if(gb[i].getScore() > high) {
-					high = gb[i].getScore();
-					tmpHigh[0] = gb[i];
-				}
-				if(gb[i].getScore() < low) {
-					low = gb[i].getScore();
-					tmpLow[0] = gb[i];
-				}
+		for (int i = 0; i < count; i++) {
+			if(gb[i].getScore() > high) {
+				high = gb[i].getScore();
+				tmpHigh[0] = gb[i];
 			}
+			if(gb[i].getScore() < low) {
+				low = gb[i].getScore();
+				tmpLow[0] = gb[i];
+			}
+
 		}
 		System.out.println("High : " + tmpHigh[0].toString() + "\n" +
 							"Low : " + tmpLow[0].toString());
 	}
 	
-	public static void avgQuestions(AssignmentInterface[] gb, int count) {
+	public static void avgQuestions(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
 		int totalQs = 0;
 		int avg = 0;
+		
+		if(count == 0) {
+			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+		}
 		
 		for(int i = 0; i < count; i++) {
 			if(gb[i] instanceof Quiz) {
@@ -294,14 +329,17 @@ public class Gradebook {
 			}
 		}
 		if(totalQs == 0) {
-			System.out.println("No Quiz's Present.");
+			System.out.println("\tNo Quizs Have Been Made");
 		} else {
 			System.out.println("Average Number of Quiz Questions: " + avg/totalQs);
 		}
 	}
 	
-	public static void printDiscuss(AssignmentInterface[] gb, int count) {
+	public static void printDiscuss(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
 		int totalDiscuss = 0;
+		if(count == 0) {
+			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+		}
 		
 		System.out.println("Discussion's Associated Readings: ");
 		for (int i = 0; i < count; i++) {
@@ -311,12 +349,15 @@ public class Gradebook {
 			}
 		}
 		if (totalDiscuss == 0) {
-			System.out.println("No Discussion Readings Present");
+			System.out.println("\tNo Discussions Have Been Made");
 		}
 	}
 	
-	public static void printConcept(AssignmentInterface[] gb, int count) {
+	public static void printConcept(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
 		int totalConcept = 0;
+		if(count == 0) {
+			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+		}
 		System.out.println("Program Concept's: ");
 		for(int i = 0; i < count; i++) {
 			if(gb[i] instanceof Program) {
@@ -325,7 +366,7 @@ public class Gradebook {
 			}
 		}
 		if (totalConcept == 0) {
-			System.out.println("No Concepts Present");
+			System.out.println("\tNo Programs Have Been Made");
 		}
 	}
 	
@@ -347,6 +388,7 @@ public class Gradebook {
 				System.out.println("Error! Invalid Integer Value. Please Try Again : ");
 			}
 		}
+		sc.close();
 		return i;
 	}
 	
@@ -356,9 +398,9 @@ public class Gradebook {
 		while(valid == false) {
 			i = getInt();
 			if (i < min) {
-				System.out.println("Number must be greater than or equal to" + min);
+				System.out.println("Number must be greater than or equal to " + min);
 			} else if (i > max) {
-				System.out.println("Number must be less than or equal to" + max);
+				System.out.println("Number must be less than or equal to " + max);
 			} else {
 				valid = true;
 			}
