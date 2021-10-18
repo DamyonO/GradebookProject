@@ -1,24 +1,22 @@
 package gradebook;
 
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 import brain.*;
 
 public class Gradebook {
 	public static void main(String args[]) {
-		int numGrades;
+		int numGrades = 0;
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.println("Welcome to your Gradebook!");
 		System.out.println("Please enter how many grades you would like to insert.");
+		System.out.println("Number must be a positive integer from 1 to 20");
 		System.out.print("Number of grades : ");
-		numGrades = Integer.parseInt(sc.nextLine());
-		while(numGrades > 20 || numGrades < 0) {
-			System.out.println("Number of grades can only be a positive integer less than 20");
-			System.out.println("Please enter how many grades you would like to insert.");
-			System.out.print("Number of grades : ");
-			numGrades = Integer.parseInt(sc.nextLine());
-		}
+		
+		numGrades = getInt(1,20);
+		
 		AssignmentInterface[] openGradebook = new AssignmentInterface[numGrades];
 		String action;
 		int count = 0;
@@ -88,6 +86,7 @@ public class Gradebook {
 		Scanner sc = new Scanner(System.in);
 		String action;
 		
+		boolean validDate = false;
 		int score;
 		String name;
 		String date;
@@ -102,7 +101,7 @@ public class Gradebook {
 		while (!action.equalsIgnoreCase("quiz")
 				&& !action.equalsIgnoreCase("discussion")
 				&& !action.equalsIgnoreCase("program")) {
-			System.out.println("Invalid Choice!");
+			System.out.println("Invalid Choice! Please pick : quiz, discussion, or program");
 			System.out.println("Choice : ");
 			action = sc.nextLine();
 		}
@@ -111,11 +110,7 @@ public class Gradebook {
 			
 			Quiz newQuiz = new Quiz();
 			System.out.print("What Was The Grade? : ");
-			score = Integer.parseInt(sc.nextLine());
-			while (score > 100 || score < 0) {
-				System.out.println("Grade Invalid. Please Enter New Grade : ");
-				score = Integer.parseInt(sc.nextLine());
-			}
+			score = getInt(0, 100);
 			newQuiz.setScore(score);
 			newQuiz.setLetter(score);
 			
@@ -124,11 +119,18 @@ public class Gradebook {
 			newQuiz.setName(name);
 			
 			System.out.print("What Was The Due Date (yyyy-mm-dd) : ");
-			date = sc.nextLine();
-			newQuiz.setDate(date);
+			while (validDate == false) {
+				date = sc.nextLine();
+				try {
+					newQuiz.setDate(date);
+					validDate = true;
+				} catch (DateTimeParseException e) {
+					System.out.println("Date Entered is Invalid. Please Try Again (yyyy-mm-dd): ");
+				}
+			}
 			
 			System.out.print("How Many Questions Does The Quiz Have?");
-			numQ = Integer.parseInt(sc.nextLine());
+			numQ = getInt(1);
 			newQuiz.setNumQuestions(numQ);
 			
 			gb[count] = newQuiz;
@@ -136,11 +138,7 @@ public class Gradebook {
 		} else if (action.equalsIgnoreCase("discussion")) {
 			Discussion newDiscuss = new Discussion();
 			System.out.print("What Was The Grade? : ");
-			score = Integer.parseInt(sc.nextLine());
-			while (score > 100 || score < 0) {
-				System.out.println("Grade Invalid. Please Enter New Grade : ");
-				score = Integer.parseInt(sc.nextLine());
-			}
+			score = getInt(0, 100);
 			newDiscuss.setScore(score);
 			newDiscuss.setLetter(score);
 			
@@ -149,8 +147,16 @@ public class Gradebook {
 			newDiscuss.setName(name);
 			
 			System.out.print("What Was The Due Date (yyyy-mm-dd) : ");
-			date = sc.nextLine();
-			newDiscuss.setDate(date);
+			while (validDate == false) {
+				date = sc.nextLine();
+				try {
+					newDiscuss.setDate(date);
+					validDate = true;
+				} catch (DateTimeParseException e) {
+					System.out.println("Date Entered is Invalid. Please Try Again (yyyy-mm-dd): ");
+				}
+			}
+			
 			
 			System.out.print("What was the reading for this discussion?");
 			reading = sc.nextLine();
@@ -158,26 +164,32 @@ public class Gradebook {
 			
 			gb[count] = newDiscuss;
 		} else if (action.equalsIgnoreCase("program")) {
-			gb[count] = new Program();
+			Program newProgram = new Program();
 			System.out.print("What Was The Grade? : ");
-			score = Integer.parseInt(sc.nextLine());
-			while (score > 100 || score < 0) {
-				System.out.println("Grade Invalid. Please Enter New Grade : ");
-				score = Integer.parseInt(sc.nextLine());
-			}
-			gb[count].setScore(score);
+			score = getInt(0, 100);
+			newProgram.setScore(score);
+			newProgram.setLetter(score);
 			
 			System.out.print("What Was The Name? : ");
 			name = sc.nextLine();
+			newProgram.setName(name);
 			
 			System.out.print("What Was The Due Date (yyyy-mm-dd) : ");
-			date = sc.nextLine();
-			gb[count].setDate(date);
+			while (validDate == false) {
+				date = sc.nextLine();
+				try {
+					newProgram.setDate(date);
+					validDate = true;
+				} catch (DateTimeParseException e) {
+					System.out.println("Date Entered is Invalid. Please Try Again (yyyy-mm-dd): ");
+				}
+			}
 			
 			System.out.print("What is the concept of this program? : ");
 			concept = sc.nextLine();
+			newProgram.setConcept(concept);
 			
-			gb[count] = new Program(score, gb[count].getLetter(), name, gb[count].getDate(), concept);
+			gb[count] = newProgram;
 		}
 		System.out.print("Successfully Added : ");
 		String test = gb[count].toString();
@@ -186,9 +198,7 @@ public class Gradebook {
 	}
 	
 	public static boolean findName(AssignmentInterface[] gb, String name, int count) {
-		boolean nameFound = false;
 		for(int i = 0; i < count; i++) {
-			System.out.println(gb[i].getName() + " " + name);
 			if(name.equalsIgnoreCase(gb[i].getName())) {
 				return true;
 			}
@@ -283,7 +293,11 @@ public class Gradebook {
 				totalQs++;
 			}
 		}
-		System.out.println("Average Number of Quiz Questions: " + avg/totalQs);
+		if(totalQs == 0) {
+			System.out.println("No Quiz's Present.");
+		} else {
+			System.out.println("Average Number of Quiz Questions: " + avg/totalQs);
+		}
 	}
 	
 	public static void printDiscuss(AssignmentInterface[] gb, int count) {
@@ -318,6 +332,52 @@ public class Gradebook {
 	public static void exit() {
 		System.out.println("Bye!");
 		System.exit(0);
+	}
+	
+	public static int getInt() {
+		boolean valid = false;
+		int i = 0;
+		Scanner sc = new Scanner(System.in);
+		
+		while (valid == false) {
+			try {
+				i = Integer.parseInt(sc.nextLine());
+				valid = true;
+			} catch (NumberFormatException e) {
+				System.out.println("Error! Invalid Integer Value. Please Try Again : ");
+			}
+		}
+		return i;
+	}
+	
+	public static int getInt(int min, int max) {
+		int i = 0;
+		boolean valid = false;
+		while(valid == false) {
+			i = getInt();
+			if (i < min) {
+				System.out.println("Number must be greater than or equal to" + min);
+			} else if (i > max) {
+				System.out.println("Number must be less than or equal to" + max);
+			} else {
+				valid = true;
+			}
+		}
+		return i;
+	}
+	
+	public static int getInt(int min) {
+		int i = 0;
+		boolean valid = false;
+		while (valid == false) {
+			i = getInt();
+			if (i < min) {
+				System.out.println("Number must be greater than " + min);
+			} else {
+				valid = true;
+			}
+		}
+		return i;
 	}
 	
 }
