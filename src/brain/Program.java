@@ -1,26 +1,25 @@
+/*
+ * Assignment: Gradebook Project
+ * Name: Damyon Olson
+ */
 package brain;
 
 import java.time.LocalDate;
 
+/*
+ * The following creates the class Program, which implements the AssignmentInterface interface.
+ * It uses the provided methods, as well as creating a new getter/setter method so that it can
+ * Set and grab concept.
+ */
 public class Program implements AssignmentInterface{
+	// Variables Created //
 	int score;
 	char letter;
 	String name;
 	LocalDate date;
 	String concept;
 	
-	public Program(int score, char letter, String name, LocalDate date, String concept) {
-		this.score = score;
-		this.letter = letter;
-		this.name = name;
-		this.date = date;
-		this.concept = concept;
-	}
-	
-
-	public Program() {
-	}
-	
+	// The following getter/setter methods access concept //
 	public String getConcept(){
 		return concept;
 	}
@@ -28,7 +27,7 @@ public class Program implements AssignmentInterface{
 	public void setConcept(String concept) {
 		this.concept = concept;
 	}
-	
+	// These methods were implemented from AssignmentInterface //
 	@Override
 	public int getScore() {
 		return score;

@@ -1,27 +1,25 @@
+/*
+ * Assignment: Gradebook Project
+ * Name: Damyon Olson
+ */
 package brain;
 
 import java.time.LocalDate;
 
+/*
+ * The following creates the class Quiz, which implements the AssignmentInterface interface.
+ * It uses the provided methods, as well as creating a new getter/setter method so that it can
+ * Set and grab numQuestions.
+ */
 public class Quiz implements AssignmentInterface{
+	// Variables Created //
 	int score;
 	char letter;
 	String name;
 	LocalDate date;
     int numQuestions;
-	
-	public Quiz(int score, char letter, String name, LocalDate date, int numQuestions) {
-		this.score = score;
-		this.letter = letter;
-		this.name = name;
-		this.date = date;
-		this.numQuestions = numQuestions;
-	}
-	
 
-	public Quiz() {
-	}
-
-
+    // The following getter/setter methods access numQuestions
 	public int getNumQuestions(){
 		return numQuestions;
 	}
@@ -29,7 +27,7 @@ public class Quiz implements AssignmentInterface{
 	public void setNumQuestions(int numQ) {
 		this.numQuestions = numQ;
 	}
-	
+	// These methods were implemented from AssignmentInterface
 	@Override
 	public int getScore() {
 		return score;

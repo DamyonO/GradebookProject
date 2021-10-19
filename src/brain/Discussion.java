@@ -1,26 +1,25 @@
+/*
+ * Assignment: Gradebook Project
+ * Name: Damyon Olson
+ */
 package brain;
 
 import java.time.LocalDate;
 
+/*
+ * The following creates the class Discussion, which implements the AssignmentInterface interface.
+ * It uses the provided methods, as well as creating a new getter/setter method so that it can
+ * Set and grab associatedReading.
+ */
 public class Discussion implements AssignmentInterface{
+	// Variables Created //
 	int score;
 	char letter;
 	String name;
 	LocalDate date;
 	String associatedReading;
 	
-	public Discussion(int score, char letter, String name, LocalDate date, String ar) {
-		this.score = score;
-		this.letter = letter;
-		this.name = name;
-		this.date = date;
-		this.associatedReading = ar;
-	}
-	
-
-	public Discussion() {
-	}
-	
+	// The following getter/setter methods access associatedReading //
 	public String getAssociatedReading(){
 		return associatedReading;
 	}
@@ -28,7 +27,7 @@ public class Discussion implements AssignmentInterface{
 	public void setAssociatedReading(String ar) {
 		this.associatedReading = ar;
 	}
-	
+	// These methods were implemented from AssignmentInterface // 
 	@Override
 	public int getScore() {
 		return score;

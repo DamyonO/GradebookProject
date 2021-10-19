@@ -1,7 +1,15 @@
+/*
+ * Assignment: Gradebook Project
+ * Name: Damyon Olson
+ */
 package brain;
 
 import java.time.*;
 
+/* 
+ * The following interface creates the Getters/Setters and toString methods to be used
+ * in the classes Discussion.java, Program.java, and Quiz.java.
+ */
 public interface AssignmentInterface {
 	public int getScore();
 	public void setScore(int score);
