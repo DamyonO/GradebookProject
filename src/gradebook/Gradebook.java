@@ -469,7 +469,7 @@ public class Gradebook {
 		if(totalQs == 0) {
 			System.out.println("\tNo Quizzes Have Been Made"); // If array is not empty, It tells the user No Quizzes were Added //
 		} else {
-			System.out.println("Average Number of Quiz Questions: " + avg/totalQs);
+			System.out.println("Average Number of Quiz Questions: " + (double)avg/totalQs);
 		}
 	}
 	
