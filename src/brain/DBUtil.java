@@ -19,7 +19,7 @@ public class DBUtil {
 			try {
 				Scanner sc = new Scanner(System.in);
 				System.out.println("Connecting to the MySQL Database\n");
-				String url = "jdbc:mysql://cpsc2810-1.cjbcacjugpfv.us-east-1.rds.amazonaws.com/Gradebook";
+				String url = "jdbc:mysql://myawsdb.cno2zewghfii.us-east-1.rds.amazonaws.com";
 				System.out.println("Please Enter Your Username For MySQL : ");
 				String username = sc.nextLine();
 				System.out.println("Please Enter Your Password For MySQL : ");
@@ -41,7 +41,7 @@ public class DBUtil {
                 connection.close();
                 System.out.println("\n\tConnection to MySQL Has Closed!");
             } catch (SQLException e) {
-                System.out.println(e);
+                throw new SQLException(e);
             } finally {
                 connection = null;
             }

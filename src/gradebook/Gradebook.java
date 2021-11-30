@@ -96,7 +96,9 @@ public class Gradebook {
 				
 				
 				} else if (action.equalsIgnoreCase("tosql")) {
-				
+					if (openGradebook.size() == 0) {
+						throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+					}
 					DBUtil.toMySQL(openGradebook);
 				
 				
@@ -474,6 +476,28 @@ public class Gradebook {
 					addQuiz.setNumQuestions(Integer.parseInt(data[5]));
 					
 					gb.add(addQuiz);
+				}
+				if(data[0].equalsIgnoreCase("discussion")) {
+					Discussion addDis = new Discussion();
+					
+					addDis.setName(data[1]);
+					addDis.setScore(Integer.parseInt(data[2]));
+					addDis.setLetter(addDis.getScore());
+					addDis.setDate(data[4]);
+					addDis.setAssociatedReading(data[5]);
+					
+					gb.add(addDis);
+				}
+				if(data[0].equalsIgnoreCase("program")) {
+					Program addProgram = new Program();
+					
+					addProgram.setName(data[1]);
+					addProgram.setScore(Integer.parseInt(data[2]));
+					addProgram.setLetter(addProgram.getScore());
+					addProgram.setDate(data[4]);
+					addProgram.setConcept(data[5]);
+					
+					gb.add(addProgram);
 				}
 			}
 			br.close();
