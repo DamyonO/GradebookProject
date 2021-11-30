@@ -83,4 +83,31 @@ public class Quiz implements AssignmentInterface{
 		String myString = "Quiz - Name: " + name + ", Score: " + score + ", Letter: " + letter + ", Date: " + date + ", Number of Questions: " + numQuestions;
 		return myString;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		Quiz p = (Quiz) obj;
+		
+		if(!p.getName().equals(this.getName())) {
+			return false;
+		}
+		
+		if(this.score != p.score) {
+			return false;
+		}
+		
+		if(p.getLetter() != this.getLetter()) {
+			return false;
+		}
+		
+		if(p.getDate().equals(this.getDate())) {
+			return false;
+		}
+		
+		if(p.getNumQuestions() != this.getNumQuestions()) {
+			return false;
+		}
+		
+		return true;
+	}
 }

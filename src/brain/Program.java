@@ -83,4 +83,31 @@ public class Program implements AssignmentInterface{
 		String myString = "Program - Name: " + name + ", Score: " + score + ", Letter: " + letter + ", Date: " + date + ", Concept: " + concept;
 		return myString;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		Program p = (Program) obj;
+		
+		if(!p.getName().equals(this.getName())) {
+			return false;
+		}
+		
+		if(this.score != p.score) {
+			return false;
+		}
+		
+		if(p.getLetter() != this.getLetter()) {
+			return false;
+		}
+		
+		if(p.getDate().equals(this.getDate())) {
+			return false;
+		}
+		
+		if(p.getConcept().equals(this.getConcept())) {
+			return false;
+		}
+		
+		return true;
+	}
 }

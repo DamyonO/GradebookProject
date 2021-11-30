@@ -6,6 +6,9 @@ package gradebook;
 
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.io.*;
+import java.sql.SQLException;
+import java.time.*;
 
 import brain.*;
 
@@ -15,19 +18,13 @@ import brain.*;
  */
 public class Gradebook {
 	public static void main(String args[]) {
-			int numGrades = 0;
 			Scanner sc = new Scanner(System.in);
 		
-			System.out.println("Welcome to your Gradebook!");
-			System.out.println("Please enter how many grades you would like to insert.");
-			System.out.println("Number must be a positive integer from 1 to 20");
-			System.out.print("Number of grades : ");
+			System.out.println("Welcome to your Gradebook!\n");
+			// calls the getInt(min, max) helper function //
 		
-			numGrades = getInt(1,20); // calls the getInt(min, max) helper function //
-		
-			AssignmentInterface[] openGradebook = new AssignmentInterface[numGrades]; // Interface Array Created //
+			ArrayList<AssignmentInterface> openGradebook = new ArrayList<>(); // Interface Array Created //
 			String action;
-			int count = 0;
 		
 			displayMenu(); // calls the displayMenu() helper function //
 			/*
@@ -57,9 +54,8 @@ public class Gradebook {
 					 * update the overall count for how many items are inside of the gradebook,
 					 * and display the amount of items within the gradebook.
 					 */
-					openGradebook =  add(openGradebook, count, numGrades);
-					count = updateCount(openGradebook);
-					System.out.println("Gradebook Size is Now: " + count + "/" + numGrades + "\n");
+					openGradebook =  add(openGradebook);
+					System.out.println("Gradebook Size is Now: " + openGradebook.size());
 
 				} else if (action.equalsIgnoreCase("del")) {
 					
@@ -68,38 +64,53 @@ public class Gradebook {
 					 * update the overall count for how many items are inside of the gradebook,
 					 * and display the amount of items within the gradebook.
 					 */
-					openGradebook = del(openGradebook, count, numGrades);
-					count = updateCount(openGradebook);
-					System.out.println("Gradebook Size is Now: " + count + "/" + numGrades + "\n");
+					openGradebook = del(openGradebook);
+					System.out.println("Gradebook Size is Now: " +openGradebook.size());
 				
 				} else if (action.equalsIgnoreCase("print")) {
-
-					print(openGradebook, count); // Prints Every Item In Gradebook //
+					if (openGradebook.size() == 0) {
+						throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+					}
+					printChoiceMenu();
+					int menuOption = getInt(1, 4);
+					print(openGradebook, menuOption); // Prints Every Item In Gradebook //
 				
 				
-				} else if (action.equalsIgnoreCase("average")) {
+				} else if (action.equalsIgnoreCase("fprint")) {
+					if (openGradebook.size() == 0) {
+						throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+					}
 				
-					average(openGradebook, count); // Displays The Average of Every Grade in the Gradebook //
-				
-				
-				} else if (action.equalsIgnoreCase("h/l")) {
-				
-					highlow(openGradebook, count); // Displays the Highest and Lowest Grades in the Gradebook //
-				
-				
-				} else if (action.equalsIgnoreCase("quiz")) {
-				
-					avgQuestions(openGradebook, count); // Displays the Average Amount of Questions that Quizzes Have //
+					System.out.println("Please enter the name of the file you'd like to write to : ");
+					System.out.println("WARNING: If the name entered already exists as a file, it will be overwritten");
+					String fileName = sc.nextLine();
+					writeToFile(openGradebook, fileName);
 				
 				
-				} else if (action.equalsIgnoreCase("discuss")) {
+				} else if (action.equalsIgnoreCase("fread")) {
 				
-					printDiscuss(openGradebook, count); // Displays a List of Each Discussion Reading //
+					System.out.println("Please enter the name of the file you'd like to read from : ");
+					String fileName = sc.nextLine();
+					openGradebook = readFromFile(openGradebook, fileName);
+					System.out.println("Gradebook Size is Now: " + openGradebook.size());
 				
 				
-				} else if (action.equalsIgnoreCase("program")) {
+				} else if (action.equalsIgnoreCase("tosql")) {
 				
-					printConcept(openGradebook, count); // Displays a List of Each Program Concept //
+					DBUtil.toMySQL(openGradebook);
+				
+				
+				} else if (action.equalsIgnoreCase("fromsql")) {
+				
+					openGradebook = DBUtil.getMySQL(openGradebook);
+					System.out.println("Gradebook Size is Now: " + openGradebook.size());
+				
+				
+				} else if (action.equalsIgnoreCase("search")) {
+					
+					printSearchMenu();
+					int choice = getInt(1,6);
+					openGradebook = DBUtil.searchMySQL(openGradebook, choice);
 				
 				
 				} else if (action.equalsIgnoreCase("exit") || action.equalsIgnoreCase("quit")) {
@@ -124,31 +135,17 @@ public class Gradebook {
 		System.out.println("             COMMAND MENU");
 		System.out.println("------------------------------------------");
 		System.out.println("menu     - Displays This Menu");
-		System.out.println("add      - Adds Grade to Gradebook");
-		System.out.println("del      - Deleets Grade from Gradebook");
-		System.out.println("print    - Prints Grades in Gradebook");
-		System.out.println("average  - Prints Grade Average");
-		System.out.println("h/l      - Prints Highest and Lowest Grade");
-		System.out.println("quiz     - Prints Quiz Question Average");
-		System.out.println("discuss  - Prints All Discussion Readings");
-		System.out.println("program  - Prints All Program Concepts");
+		System.out.println("add      - Adds Grade To Gradebook");
+		System.out.println("del      - Delets Grade From Gradebook");
+		System.out.println("print    - Prints Grades In Gradebook");
+		System.out.println("fprint   - Prints Gradebook To A File");
+		System.out.println("fread    - Reads Gradebook From A File");
+		System.out.println("tosql    - Adds All Grades To MySQL Table");
+		System.out.println("fromsql  - Reads Grades From MySQL And Adds Them To List");
+		System.out.println("search   - Searches MySQL Database");
 		System.out.println("exit     - Exits This Program\n");
 	}
 	
-	/*
-	 * The updateCount helper function will check exactly how many elements inside
-	 * of the gradebook are being used and returns an int. Count is used throughout
-	 * the program so memory bounds are not exceeded.
-	 */
-	public static int updateCount(AssignmentInterface[] gb) {
-		int count = 0;
-		for(int i = 0; i < gb.length; i++) {
-			if(gb[i] != null) {
-				count++;
-			}
-		}
-		return count;
-	}
 	
 	/*
 	 * The add helper function returns an AssignmentInterface array so that the
@@ -156,7 +153,7 @@ public class Gradebook {
 	 * the user to choose which type of assignment they want to add to the gradebook,
 	 * as well as fill in all of the necessary prompts such as name, date, score, etc. 
 	 */
-	public static AssignmentInterface[] add(AssignmentInterface[] gb, int count, int numGrades) throws GradebookFullException {
+	public static ArrayList<AssignmentInterface> add(ArrayList<AssignmentInterface> gb) throws GradebookFullException {
 		// Variables Created //
 		Scanner sc = new Scanner(System.in);
 		String action;
@@ -169,14 +166,11 @@ public class Gradebook {
 		String reading;
 		
 		// Throws an exception if the gradebook is full //
-		if(count == numGrades) {
-			throw new GradebookFullException("\n\t"+"The Gradebook Is Full\n");
-		}
 		
 		// User is asked which type of assignment they would like to add //
 		System.out.println("What type of grade would you like to add?");
 		System.out.println("Choices: quiz, discussion, program");
-		System.out.println("Choice : ");
+		System.out.print("Choice : ");
 		action = sc.nextLine();
 		
 		// If a choice entered is invalid, the user is prompted to reenter //
@@ -229,7 +223,7 @@ public class Gradebook {
 			numQ = getInt(1); // getInt(min) is used here to insure a 0 or negative question quiz is inputed //
 			newQuiz.setNumQuestions(numQ);
 			
-			gb[count] = newQuiz; // Insert Object to Array //
+			gb.add(newQuiz); // Insert Object to Array //
 			
 		/*
 		 * The following creates a new Discussion where the user can
@@ -271,7 +265,7 @@ public class Gradebook {
 			reading = sc.nextLine();
 			newDiscuss.setAssociatedReading(reading);
 			
-			gb[count] = newDiscuss; // Insert Object to Array //
+			gb.add(newDiscuss); // Insert Object to Array //
 			
 		/*
 		 * The following creates a new Program where the user can
@@ -312,12 +306,12 @@ public class Gradebook {
 			concept = sc.nextLine();
 			newProgram.setConcept(concept);
 			
-			gb[count] = newProgram; // Insert Object to Array //
+			gb.add(newProgram); // Insert Object to Array //
 		}
 		
 		// Notifies the User on Which Object Was Successfully Added Using toString(), then returns the Array //
 		System.out.print("Successfully Added : ");
-		String test = gb[count].toString();
+		String test = gb.get(gb.size() - 1).toString();
 		System.out.println(test);
 		return gb;
 	}
@@ -326,9 +320,9 @@ public class Gradebook {
 	 * findName is a helper function used by the delete class to check and see
 	 * if the grade that the user wants deleted can be found within the array.
 	 */
-	public static boolean findName(AssignmentInterface[] gb, String name, int count) {
-		for(int i = 0; i < count; i++) {
-			if(name.equalsIgnoreCase(gb[i].getName())) {
+	public static boolean findName(ArrayList<AssignmentInterface> gb, String name) {
+		for(int i = 0; i < gb.size(); i++) {
+			if(name.equalsIgnoreCase(gb.get(i).getName())) {
 				return true;
 			}
 		}
@@ -343,43 +337,33 @@ public class Gradebook {
 	 * to remove. If it is unable to find the name, a InvalidGradeException will be thrown.
 	 * If the gradebook is empty, a GradebookEmptyException will be thrown. 
 	 */
-	public static AssignmentInterface[] del(AssignmentInterface[] gb, int count, int maxSize) throws GradebookEmptyException, InvalidGradeException {
+	public static ArrayList<AssignmentInterface> del(ArrayList<AssignmentInterface> gb) throws GradebookEmptyException, InvalidGradeException {
 		String nameDel;
 		boolean wasNameFound = false;
-		boolean nameFound = false;
-		int j = 0;
 		Scanner sc = new Scanner(System.in);
 		// If the array is empty, GradebookEmptyException is thrown //
-		if(count == 0) {
+		if(gb.size() == 0) {
 			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
 		}
-		AssignmentInterface[] tmp = new AssignmentInterface[maxSize];
 		
 		// Asks the user for the name of the grade to be deleted //
 		System.out.println("Please Enter The Name of the Grade To Be Deleted : ");
 		nameDel = sc.nextLine();
 		// Check for the name using findName helper function //
-		wasNameFound = findName(gb, nameDel, count);
-		// If the name isnt found, throw InvalidGradeException
+		wasNameFound = findName(gb, nameDel);
+		// If the name isn't found, throw InvalidGradeException
 		if(!wasNameFound) {
 			throw new InvalidGradeException("\n\t"+"The Grade Entered Could Not Be Found");
 		}
 		
 		// If the name is found, remove it from the array by using a temp array //
-		for(int i = 0; i < count - 1; i++) {
-			if (nameFound == true) {
-				tmp[j] = gb[i];
-			}
-			if(nameFound == false) {
-				if(gb[i].getName() != nameDel) {
-					tmp[j] = gb[i];
-					j++;
-				} else {
-					nameFound = true;
-				}
+		for(int i = 0; i < gb.size(); i++) {
+			if(gb.get(i).getName().equalsIgnoreCase(nameDel)) {
+				gb.remove(i);
+				break;
 			}
 		}
-		return tmp; // Return tmp array to update the gradebook in main //
+		return gb; // Return tmp array to update the gradebook in main //
 		
 	}
 	
@@ -387,139 +371,135 @@ public class Gradebook {
 	 * The following will print the entire arraybook for the user.
 	 * If the gradebook is empty, a GradebookEmptyException will be thrown.
 	 */
-	public static void print(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
-		if(count == 0) {
-			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
-		}
-		for (int i = 0; i < count; i++) {
-			System.out.println(gb[i].toString());
+	public static void printChoiceMenu() {
+		System.out.println("\nHow would you like the list sorted?");
+		System.out.println("\t1. By Score (Numeric)");
+		System.out.println("\t2. By Letter Grade");
+		System.out.println("\t3. By Name (Alphabetically");
+		System.out.println("\t4. By Due Date\n");
+		System.out.print("Please enter a menu option (1 - 4) : ");
+	}
+	public static void print(ArrayList<AssignmentInterface> gb, int menuOption) throws GradebookEmptyException {
+		switch (menuOption) {
+			case 1:
+				Collections.sort(gb, new Comparator<AssignmentInterface>() {
+					public int compare(AssignmentInterface g1, AssignmentInterface g2) {
+						return Integer.valueOf(g1.getScore()).compareTo(g2.getScore());
+					}
+				});
+				for (int i = 0; i < gb.size(); i++) {
+					System.out.println(gb.get(i).toString());
+				}
+				break;
+			case 2:
+				Collections.sort(gb, new Comparator<AssignmentInterface>() {
+					public int compare(AssignmentInterface g1, AssignmentInterface g2) {
+						Character c1 = g1.getLetter();
+						Character c2 = g2.getLetter();
+						return c1.compareTo(c2);
+					}
+				});
+				for (int i = 0; i < gb.size(); i++) {
+					System.out.println(gb.get(i).toString());
+				}
+				break;
+			case 3:
+				Collections.sort(gb, new Comparator<AssignmentInterface>() {
+					public int compare(AssignmentInterface g1, AssignmentInterface g2) {
+						return String.valueOf(g1.getName()).compareTo(g2.getName());
+					}
+				});
+				for (int i = 0; i < gb.size(); i++) {
+					System.out.println(gb.get(i).toString());
+				}
+				break;
+				
+			case 4:
+				Collections.sort(gb, new Comparator<AssignmentInterface>() {
+					public int compare(AssignmentInterface g1, AssignmentInterface g2) {
+						return g1.getDate().compareTo(g2.getDate());
+					}
+				});
+				for (int i = 0; i < gb.size(); i++) {
+					System.out.println(gb.get(i).toString());
+				}
+				break;
+			default:
+				System.out.println("\tSomething Went Wrong!");
 		}
 	}
-	
-	/*
-	 * The following function will print out a double stating
-	 * the average of all the grades within the gradebook.
-	 * A GradebookEmptyException is thrown if the
-	 * gradebook is empty.
-	 */
-	public static void average(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
-		int totalGrade = 0;
-		double average = 0;
-		
-		if(count == 0) {
-			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
-		}
-		
-		for(int i = 0; i < count; i++) {
-			average = average + gb[i].getScore();
-			totalGrade++;
-		}
-		average = average/totalGrade;
-		System.out.println("Average: " + average);
-	}
-	
-	/*
-	 * The following prints out the highest and lowest grades within
-	 * the gradebook. However, if the gradebook is empty,
-	 * a GradebookEmptyException is thrown.
-	 */
-	public static void highlow(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
-		int high = 0;
-		int low = 100;
-		if (count == 0) {
-			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
-		}
-		AssignmentInterface[] tmpHigh = new AssignmentInterface[1];
-		AssignmentInterface[] tmpLow = new AssignmentInterface[1];
-		
-		for (int i = 0; i < count; i++) {
-			if(gb[i].getScore() > high) {
-				high = gb[i].getScore();
-				tmpHigh[0] = gb[i]; // Sets a tmpHigh variable for the toString to be printed //
-			}
-			if(gb[i].getScore() < low) {
-				low = gb[i].getScore();
-				tmpLow[0] = gb[i]; // Sets a tmpLow variable for the toString to be printed //
-			}
 
-		}
-		System.out.println("High : " + tmpHigh[0].toString() + "\n" +
-							"Low : " + tmpLow[0].toString());
-	}
 	
-	/*
-	 * Prints out the average amount of questions within only the quiz
-	 * objects inside the interface array. If gradebook is empty, GradebookEmptyException
-	 * is thrown.
-	 */
-	public static void avgQuestions(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
-		int totalQs = 0;
-		int avg = 0;
-		
-		if(count == 0) {
-			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
-		}
-		
-		for(int i = 0; i < count; i++) {
-			if(gb[i] instanceof Quiz) { // instanceof confirms that the current element is an array //
-				avg = avg + ((Quiz)gb[i]).getNumQuestions();
-				totalQs++;
+	public static void writeToFile(ArrayList<AssignmentInterface> gb, String fileName) {
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(System.getProperty("user.dir") + "\\GradeTextFiles\\" + fileName + ".txt"));
+			for(int i = 0; i < gb.size(); i++) {
+				if(gb.get(i) instanceof Quiz) {
+					bw.write("Quiz\t" + gb.get(i).getName() + "\t" + gb.get(i).getScore() + "\t" + 
+							 gb.get(i).getLetter() + "\t" + gb.get(i).getDate() + "\t" + ((Quiz) gb.get(i)).getNumQuestions() + "\n");
+				}
+				if(gb.get(i) instanceof Program) {
+					bw.write("Program\t" + gb.get(i).getName() + "\t" + gb.get(i).getScore() + "\t" + 
+							 gb.get(i).getLetter() + "\t" + gb.get(i).getDate() + "\t" + ((Program) gb.get(i)).getConcept() + "\n");
+				}
+				if(gb.get(i) instanceof Discussion) {
+					bw.write("Discussion\t" + gb.get(i).getName() + "\t" + gb.get(i).getScore() + "\t" + 
+							 gb.get(i).getLetter() + "\t" + gb.get(i).getDate() + "\t" + ((Discussion) gb.get(i)).getAssociatedReading() + "\n");	
+				}
 			}
-		}
-		if(totalQs == 0) {
-			System.out.println("\tNo Quizzes Have Been Made"); // If array is not empty, It tells the user No Quizzes were Added //
-		} else {
-			System.out.println("Average Number of Quiz Questions: " + (double)avg/totalQs);
+			bw.close();
+			
+		} catch(IOException e) {
+			System.out.println(e);
+			return;
 		}
 	}
 	
-	/*
-	 * Prints out each Discussion reading within the array object. If its empty,
-	 * throw GradebookEmptyException.
-	 */
-	public static void printDiscuss(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
-		int totalDiscuss = 0;
-		if(count == 0) {
-			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
+	public static ArrayList<AssignmentInterface> readFromFile(ArrayList<AssignmentInterface> gb, String fileName){
+		String currentLine;
+		String data[];
+		
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "\\GradeTextFiles\\" + fileName + ".txt"));
+			while((currentLine = br.readLine()) != null) {
+				data = currentLine.split("\t");
+				System.out.println(data[0]);
+				if(data[0].equalsIgnoreCase("quiz")) {
+					Quiz addQuiz = new Quiz();
+					
+					addQuiz.setName(data[1]);
+					addQuiz.setScore(Integer.parseInt(data[2]));
+					addQuiz.setLetter(addQuiz.getScore());
+					addQuiz.setDate(data[4]);
+					addQuiz.setNumQuestions(Integer.parseInt(data[5]));
+					
+					gb.add(addQuiz);
+				}
+			}
+			br.close();
+		} catch (Exception e) {
+			System.out.println(e);
 		}
 		
-		System.out.println("Discussion's Associated Readings: ");
-		for (int i = 0; i < count; i++) {
-			if(gb[i] instanceof Discussion) {
-				System.out.println(((Discussion)gb[i]).getAssociatedReading());
-				totalDiscuss++;
-			}
-		}
-		if (totalDiscuss == 0) {
-			System.out.println("\tNo Discussions Have Been Made"); // If array is not empty, prompt uset there is no discussions in array //
-		}
+		
+		return gb;
 	}
 	
-	/*
-	 * Prints out all of the program comcepts in the array.
-	 * If its empty, throw gradebook exception.
-	 */
-	public static void printConcept(AssignmentInterface[] gb, int count) throws GradebookEmptyException {
-		int totalConcept = 0;
-		if(count == 0) {
-			throw new GradebookEmptyException("\n\t"+"The Gradebook Is Empty");
-		}
-		System.out.println("Program Concept's: ");
-		for(int i = 0; i < count; i++) {
-			if(gb[i] instanceof Program) {
-				System.out.println(((Program)gb[i]).getConcept());
-				totalConcept++;
-			}
-		}
-		if (totalConcept == 0) {
-			System.out.println("\tNo Programs Have Been Made");
-		}
+	public static void printSearchMenu() {
+		System.out.println("Please Chose From One Of The Following Searches : ");
+		System.out.println("1. All Quizzes");
+		System.out.println("2. All Programs");
+		System.out.println("3. All Discussions");
+		System.out.println("4. All Grades Within A Certain Score Range");
+		System.out.println("5. All Grades Within A Certain Due Date Range");
+		System.out.println("6. All Grades With An Even Score");
 	}
 	
 	/*
 	 * exit the program
 	 */
-	public static void exit() {
+	public static void exit() throws SQLException {
+		DBUtil.closeConnection();
 		System.out.println("Bye!");
 		System.exit(0);
 	}

@@ -83,5 +83,31 @@ public class Discussion implements AssignmentInterface{
 		String myString = "Discussion - Name: " + name + ", Score: " + score + ", Letter: " + letter + ", Date: " + date + ", Associated Reading: " + associatedReading;
 		return myString;
 	}
+	@Override
+	public boolean equals(Object obj) {
+		Discussion p = (Discussion) obj;
+		
+		if(!p.getName().equals(this.getName())) {
+			return false;
+		}
+		
+		if(this.score != p.score) {
+			return false;
+		}
+		
+		if(p.getLetter() != this.getLetter()) {
+			return false;
+		}
+		
+		if(p.getDate().equals(this.getDate())) {
+			return false;
+		}
+		
+		if(p.getAssociatedReading().equals(this.getAssociatedReading())) {
+			return false;
+		}
+		
+		return true;
+	}
 
 }

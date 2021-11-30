@@ -20,4 +20,5 @@ public interface AssignmentInterface {
 	public LocalDate getDate();
 	public void setDate(String date);
 	public String toString();
+	public boolean equals(Object obj);
 }
